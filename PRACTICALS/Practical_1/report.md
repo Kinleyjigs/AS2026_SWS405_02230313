@@ -1,36 +1,58 @@
-
 # Practical 1 Report
 
 Splunk is **a powerful data analytics and log management platform used to ingest, index, search, and visualize massive volumes of machine-generated telemetry.**
 
-
 Splunk has three main components, namely Forwarder, Indexer, and Search Head.
 
-### **Splunk Forwarder**
+1. What is the attacker IP found attacking and compromising the web server?
 
-!image.png
+- The attacker IP is 198.51.100.55 which was found attacking and compromising the web server. 
 
-Splunk Forwarder is a lightweight agent installed on the endpoint intended to be monitored, and its main task is to collect the data and send it to the Splunk instance. It does not affect the endpoint’s performance as it takes very few resources to process. Some of the key data sources are:
+![alt text](<assets/image1.png>)
 
-- Web server generating web traffic.
-- Windows machine generating Windows Event Logs, PowerShell, and Sysmon data.
-- Linux host generating host-centric logs.
-- Database generating DB connection requests, responses, and errors.
+#### search query used
+```
+index=main sourcetype=web_traffic user_agent!=*Mozilla* user_agent!=*Chrome* user_agent!=*Safari* user_agent!=*Firefox*
+```
 
-### **Splunk Indexer**
+2. Which day was the peak traffic in the logs? (Format: YYYY-MM-DD)
+- 2025-10-12 was the peak traffic day in the logs.
+![alt text](<assets/image2.png>)
 
-!image.png
+#### search query used
+```
+index=main sourcetype=web_traffic | timechart span=1d count | sort by count | reverse
+```
 
-Splunk Indexer plays the main role in processing the data it receives from forwarders. It takes the data, normalizes it into field-value pairs, determines the datatype of the data, and stores them as events. Processed data is easy to search and analyze.
+3. What is the count of Havij user_agent events found in the logs?
+- The count of Havij user_agent events in the logs is 993
 
-### **Search Head**
+![alt text](<assets/image3.png>)
 
-Splunk Search Head is the place within the Search & Reporting App where users can search the indexed logs as shown below. When the user searches for a term or uses a Search language known as Splunk Search Processing Language, the request is sent to the indexer and the relevant events are returned in the form of field-value pairs.
+#### search query used
+```
+index=main sourcetype=web_traffic | timechart span=1d count | sort by count | reverse
+```
 
-Press enter or click to view image in full size
+4. How many path traversal attempts to access sensitive files on the server were observed?
 
-!image.png
+- There were 658 path traversal attempts to access sensitive files on the server.
 
-Search Head also provides the ability to transform the results into presentable tables, visualizations like pie-chart, bar-chart and column-chart, as shown below:
+![alt text](<assets/image4.png>)
 
-!image.png
+#### search query used
+```
+sourcetype=web_traffic client_ip=198.51.100.55 AND path="*..\/..\/*" OR path="*redirect*" | stats count by path
+```
+
+
+5. Examine the firewall logs. How many bytes were transferred to the C2 server IP from the compromised web server?
+
+- There were 126,167 bytes transferred to the C2 server IP from the compromised web server.
+
+![alt text](<assets/image5.png>)
+
+#### search query used
+```
+sourcetype=firewall_logs src_ip="10.10.1.5" AND dest_ip="198.51.100.55" AND action="ALLOWED" | stats sum(bytes_transferred) by src_ip
+```
