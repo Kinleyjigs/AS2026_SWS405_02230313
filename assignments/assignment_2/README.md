@@ -3,7 +3,9 @@
 
 ### Challenge description
 
+```
 My sister's computer crashed. We were very fortunate to recover this memory dump. Your job is get all her important files from the system. From what we remember, we suddenly saw a black window pop up with something being executed. When the crash happened, she was trying to draw something. That's all we remember from the time of the crash.
+```
 
 ### Setup
 
@@ -17,7 +19,7 @@ My sister's computer crashed. We were very fortunate to recover this memory dump
 | Plugins | Cloned the community plugin pack. |
 | Errors | distorm3 errors appeared but did not affect the plugins used. |
 
-##  Investigation log
+###  Investigation log
 
 I ran `imageinfo`, then `pslist` and `pstree`.
 
@@ -149,8 +151,9 @@ From this lab, I found out that memory contains more information than just the a
 # Lab 2: A New World
 
 ### Challenge description
-
+```
 One of the clients of our company, lost the access to his system due to an unknown error. He is supposedly a very popular "environmental" activist. As a part of the investigation, he told us that his go to applications are browsers, his password managers etc. We hope that you can dig into this memory dump and find his important stuff and give it back to us.
+```
 
 ### Scope the Image
 
@@ -278,7 +281,7 @@ From this lab i found that the evidence can be hidden in different parts of memo
 
 # Lab 3
 
-## Challenge description
+### Challenge description
 ```
 A malicious script encrypted a very secret piece of information I had on my system. Can you recover the information for me please?
 
@@ -288,7 +291,7 @@ Note-2: You'll need the first half of the flag to get the second.
 
 The flag format for this lab is: inctf{s0me_l33t_Str1ng}
 ```
-## Scope the image
+### Scope the image
 
 First let's look for the profiles of the memory dump using imageinfo plugin. 
 
@@ -376,5 +379,182 @@ In this lab, cmdline was the key plugin. It showed which files the two notepad p
 ---
 
 # Lab 4: Obsession
+### Challenge description
+```
+My system was recently compromised. The Hacker stole a lot of information but he also deleted a very important file of mine. I have no idea on how to recover it. The only evidence we have, at this point of time is this memory dump. Please help me.
+
+Note: This challenge is composed of only 1 flag.
+
+The flag format for this lab is: inctf{s0me_l33t_Str1ng}
+```
 
 
+### Scope the Image
+
+First we check the profile of the memory dump using the imageinfo plugin.
+
+![alt text](assets/lab4-fig01-imageinfo.png)
+*Figure 1: imageinfo output showing suggested profile*
+
+Output shows the profile as `Win7SP1x64` and WindowsAMD64PagedMemory.
+
+Then we check the processes using pslist and pstree plugins.
+![alt text](assets/lab4-fig02.png)
+*Figure 2: pslist output showing two user sessions*
+
+There are two user sessions. Session 2 started after DumpIt was already running, so a second user logged in before the capture.
+![alt text](assets/lab4-fig03.png)
+*Figure 3: pstree shows StikyNot.exe started by the second explorer.exe*
+
+
+I only found this StikyNot.exe, and the evidence is more likely in files than in processes. The lab  also says to look at the Desktop.
+
+#### Desktop files
+We saved the filescan output and searched it for files on the Desktop.
+
+![alt text](assets/lab4-fig04.png)
+*Figure 4: filescan output showing files on the eminem and SlimShady Desktops*
+
+From the output i found that there are two users, eminem and SlimShady. `galf.jpeg` ("flag" backwards) on eminem's Desktop looks suspicious, and `Important.txt` on SlimShady's Desktop looks important.
+
+
+### Checking galf.jpeg
+`galf.jpeg` looked suspicious, so I dumped it and checked it using the basic steganography tools.
+
+![alt text](assets/lab4-fig05-galf.png)
+*Figure 5: dumping galf.jpeg and running steghide with an empty passphrase*
+
+Steghide extracted a hidden file called `LMAO.txt` with no passphrase. strings found no flag text.
+
+![alt text](assets/lab4-fig06-lmao.png)
+*Figure 6: LMAO.txt says "Move on bro, there is nothing here :)"*
+
+![alt text](assets/lab4-fig07-joker.png)
+*Figure 7: galf.jpeg shows a joker image*
+
+The image is a distraction, but it still counts because it rules out the most obvious lead and shows why I moved on to Important.txt.
+
+Next I tried to extract Important.txt the normal way with dumpfiles.
+
+![alt text](assets/lab4-fig08-dumpfiles-fail.png)
+*Figure 8: dumpfiles finds Important.txt but writes no file*
+
+dumpfiles printed the file path but saved nothing. The file still appears in filescan, but its content is no longer cached in memory because the file was deleted, so dumpfiles has nothing to copy.
+
+
+### Recovering Important.txt from the MFT (Flag)
+
+I parsed the NTFS Master File Table with mftparser, saved the output to a file and searched it for Important.txt.
+
+![alt text](assets/lab4-fig09-mftparser-grep.png)
+*Figure 9: mftparser finds the MFT record for Important.txt*
+
+The file content is stored inside its MFT record, split up by many line breaks (`0d 0a`). Joining the readable characters gives the flag.
+
+![alt text](assets/lab4-fig11-flag.png)
+*Figure 11: hex converted back to text with line breaks removed*
+
+### Flag
+`inctf{1_is_n0t_EQu4l_7o_2_bUt_th1s_d0s3nt_m4ke_s3ns3}`
+
+#### Why dumpfiles failed but mftparser worked
+dumpfiles could not recover Important.txt because its cached data was missing from memory. However, mftparser found the file's content inside its MFT record, which was still in memory even after deletion.
+
+### Lab 4 Conclusion
+In this lab, galf.jpeg was a false lead. Since Important.txt was deleted, dumpfiles could not recover it, but mftparser found its content. I learned that deleted files can still be recovered and that trying different plugins can help when one fails.
+
+---
+---
+
+
+# Lab 5: Black Tuesday
+### Challenge description
+```
+We received this memory dump from our client recently. Someone accessed his system when he was not there and he found some rather strange files being accessed. Find those files and they might be useful. I quote his exact statement,
+
+The names were not readable. They were composed of alphabets and numbers but I wasn't able to make out what exactly it was.
+
+Also, he noticed his most loved application that he always used crashed every time he ran it. Was it a virus?
+
+Note-1: This challenge is composed of 3 flags. If you think 2nd flag is the end, it isn't!! :P
+
+Note-2: There was a small mistake when making this challenge. If you find any string which has the string "L4B_3_D0n3!!" in it, please change it to "L4B_5_D0n3!!" and then proceed.
+
+Note-3: You'll get the stage 2 flag only when you have the stage 1 flag.
+```
+
+### Scope the Image
+
+first let's see the image info for the list of profiles.
+
+![alt text](assets/lab5-fig01-imageinfo.png)
+*Figure 1: imageinfo output showing suggested profile*
+
+The output shows the profile as `Win7SP1x64` and WindowsAMD64PagedMemory.
+
+Then we check the processes using pslist and pstree plugins.
+![alt text](assets/lab5-fig02.png)
+*Figure 2: pslist output showing WinRAR.exe (PID 2924)*
+
+
+from the plist output WinRAR.exe (PID 2924) is the archive manager the lab mentions. There are also three uppercase NOTEPAD.EXE processes, each followed by a WerFault.exe crash, which is unusual.
+
+![alt text](assets/lab5-fig03.png)
+*Figure 3: pstree shows WinRAR, notepad and DumpIt started by explorer.exe (PID 1580)*
+
+All user programs were started from the second user session's explorer.exe.
+
+
+Now let's find the archive WinRAR had open using the cmdline plugin.
+![alt text](assets/lab5-fig04.png)
+*Figure 4: cmdline shows WinRAR opened SW1wb3J0YW50.rar*
+
+The archive name `SW1wb3J0YW50` is base64 and decodes to "Important", so the file name was encoded to hide what it is.
+
+### Extracting the archive
+We dumped the archive from memory using dumpfiles and tried to open it.
+
+![alt text](assets/lab5-fig05-unrar.png)
+*Figure 5: the archive contains Stage2.png and asks for a password*
+
+The archive is password protected as said in the lab instructions so, I did not brute-force it.
+
+
+### Browser history (Flag 1)
+
+This system used Internet Explorer, so I used the built-in iehistory plugin instead of the community chromehistory plugin from Lab 2.
+
+![alt text](assets/lab5-fig06.png)
+*Figure 6: iehistory output showing long base64 filenames ending in .bmp*
+
+Most entries are normal websites and files, but two .bmp filenames are very long and start with `Zmxh`, which is base64 for "fla".
+
+![alt text](assets/lab5-fig07-decode.png)
+*Figure 7: decoding both filenames with base64*
+
+Decoding that we got almost similar flags. One decodes to a Lab 3 flag (a decoy), and the other decodes to the Lab 5 flag.
+
+so the first flag is `flag{!!_w3LL_d0n3_St4g3-1_0f_L4B_5_D0n3_!!}
+`
+### Opening the archive (Flag 2)
+
+The lab says the first flag unlocks the archive, so I used it as the password.
+
+![alt text](assets/lab5-fig08-unrar-success.png)
+*Figure 8: unrar extracts Stage2.png using Flag 1 as the password*
+
+![alt text](assets/lab5-fig09-stage2.png)
+*Figure 9: Stage2.png showing the second flag*
+
+Using the first flag as the password unlocked the archive, and Stage2.png inside it shows the second flag.
+
+Flag 2: `flag{W1th_th1s_$taGe_2_1s_c0mPL3T3_!!}`
+
+
+
+#### Why iehistory was the right plugin?
+I used iehistory because the system used Internet Explorer, and this plugin can recover its history from memory. Unlike chromehistory, it works with Internet Explorer's history files.
+
+### Lab 5 Conclusion
+
+In this lab the process list only showed WinRAR and a locked archive, so I checked the browser history for more clues. I found out a long filename that contained a hidden flag. After decoding that i got two similar filenames, I found that one was a decoy and other was the first flag. The real flag unlocked the archive, which contained another flag. The main thing i got from this lab is that that even filenames can hide evidence and that every clue needs to be checked carefully.
