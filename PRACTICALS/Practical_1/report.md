@@ -1,5 +1,7 @@
 # Practical 1 Report
 
+## Lab 1: Splunk Basics - Did you SIEM?
+
 Splunk is **a powerful data analytics and log management platform used to ingest, index, search, and visualize massive volumes of machine-generated telemetry.**
 
 Splunk has three main components, namely Forwarder, Indexer, and Search Head.
@@ -56,3 +58,22 @@ sourcetype=web_traffic client_ip=198.51.100.55 AND path="*..\/..\/*" OR path="*r
 ```
 sourcetype=firewall_logs src_ip="10.10.1.5" AND dest_ip="198.51.100.55" AND action="ALLOWED" | stats sum(bytes_transferred) by src_ip
 ```
+
+
+## Lab 2: Conti
+The Splunk platform helps IT and security teams to ensure their organizations are secure, strong and keeping up on the advancement of technology, and likewise the cybercriminals. In this Conti Ransomware room, we identify ransomware on Splunk logs.
+
+**Scenario:**
+
+> Some employees from your company reported that they can’t log into Outlook. The Exchange system admin also reported that he can’t log in to the Exchange Admin Center. After initial triage, they discovered some weird readme files settled on the Exchange server. Below is a copy of the ransomware note
+>
+
+This is the copy of the ransomeware note
+![alt text](assets/image6.png)
+
+Splunk Interface Credentials:
+- Username: bellybear
+- Password: password!!!
+
+Splunk URL: http://10.49.186.249:8000
+
