@@ -1,11 +1,11 @@
 
 # Lab 1: Beginner's Luck
 
-## 1. Challenge description
+### Challenge description
 
 My sister's computer crashed. We were very fortunate to recover this memory dump. Your job is get all her important files from the system. From what we remember, we suddenly saw a black window pop up with something being executed. When the crash happened, she was trying to draw something. That's all we remember from the time of the crash.
 
-## 2. Setup
+### Setup
 
 | Setup Item | Description |
 |---|---|
@@ -17,9 +17,7 @@ My sister's computer crashed. We were very fortunate to recover this memory dump
 | Plugins | Cloned the community plugin pack. |
 | Errors | distorm3 errors appeared but did not affect the plugins used. |
 
-## 3. Investigation log
-
-### Step 1: Scope the image
+##  Investigation log
 
 I ran `imageinfo`, then `pslist` and `pstree`.
 
@@ -37,7 +35,7 @@ I ran `imageinfo`, then `pslist` and `pstree`.
 | DumpIt.exe | 796 | The tool that made this dump. It started about 6 seconds before the capture, so it is not the user's work. |
 | VBoxService / VBoxTray | 652 / 1844 | VirtualBox tools, so this was a virtual machine. |
 
-### Step 2: Command-line activity
+### Command-line activity
 
 I ran `cmdscan`.
 
@@ -51,14 +49,14 @@ Then I ran `consoles`.
 
 - PID 2692 (conhost.exe) shows the user ran `St4G3$1`, followed by unreadable output. DumpIt.exe (PID 2260) only shows its banner and dump destination, confirming it was used for memory acquisition, not user activity.
 
-Then decoding the string that I got earlier with base64 gave me the first flag.
+Then decoding the string that I got earlier with base64 gave me the first flag `flag{th1s_1s_th3_1st_st4g3!!}`
 
 ![decoded with base64 -d](assets/lab1-fig05-base64-decode.png)
-*Figure 5: decoded with base64 -d.*
+*Figure 5: first flag.*
 
 **Why this tool worked:** `cmdscan` shows the commands typed, while `consoles` also shows the program's output stored in conhost.exe memory.
 
-### Step 3: The Archive WinRAR Had Open (Flag 2)
+### The Archive WinRAR Had Open (Flag 2)
 
 I ran `envars`.
 
@@ -87,9 +85,6 @@ From the raw file I extracted the hashed password.
 
 Now I have the uppercase letters of the hashed password. But the password is only the second part:
 
-```
-F4FF64C8BAAC57D22F22EDC681055BA6
-```
 
 ![converting the lower case to upper case letters](assets/lab1-fig11-uppercase.png)
 *Figure 11: converting the lower case to upper case letters*
@@ -107,7 +102,7 @@ The second flag has been successfully extracted.
 
 **Why this tool worked:** Windows stores account password hashes in the SAM and SYSTEM registry files. Those files are also loaded in memory. `hashdump` reads them from the memory dump and prints the hashes. So I got the key to the archive without ever knowing the real password.
 
-### Step 4: The Drawing in Paint (Flag 3)
+###  The Drawing in Paint (Flag 3)
 
 The story says she was drawing. The process list has mspaint.exe (PID 2424). It was started without any file name, so the drawing was never saved to disk. The only copy was in the memory of the process. Because of this, I dumped the process memory instead of looking for a file.
 
@@ -125,24 +120,39 @@ Here I found out that I can change the extension of the `.dmp` file to `.data` a
 
 Ok, now I got the third flag by tuning the raw import settings.
 
+third flag= `flag{Good_BoY_good_girL}`
+
 ![Flag 3 drawing recovered from mspaint memory](assets/lab1-fig17-paint-flag.png)
 *Figure 16: Flag 3. The drawing recovered from the mspaint process memory.*
 
+
+
 **Why this tool worked:** `memdump` saves everything a process had in RAM, including things that were never saved to disk. A bitmap is just rows of pixel bytes. So if I open the dump as raw pixels with the right width and offset, the picture appears.
 
-## Lab 1 Conclusion
+### Flags
+
+| Stage | Flag |
+|---|---|
+| Stage 1 | `flag{th1s_1s_th3_1st_st4g3!!}` |
+| Stage 2 | `flag{w3ll_3rd_stage_was_easy}` |
+| Stage 3 | `flag{Good_BoY_good_girL}` |
+
+
+
+### Lab 1 Conclusion
 
 From this lab, I found out that memory contains more information than just the applications that are in process. It is also able to store the results of the executed processes and passwords. It was necessary to use a different plugin for every flag, while at the same time each plugin was suitable. At the same time, `consoles` can extract the text that is shown, `hashdump` is used for registering the parts of memory, and `memdump` is good for saving the entire process. Additionally, I learned that even a failure, such as a failed search for the strings that I was looking for, can be a helpful result. In my case, it meant that the flag I obtained was an image.
 
 ---
+---
 
 # Lab 2: A New World
 
-## Challenge description
+### Challenge description
 
 One of the clients of our company, lost the access to his system due to an unknown error. He is supposedly a very popular "environmental" activist. As a part of the investigation, he told us that his go to applications are browsers, his password managers etc. We hope that you can dig into this memory dump and find his important stuff and give it back to us.
 
-## Scope the Image
+### Scope the Image
 
 Find the profile:
 
@@ -162,7 +172,7 @@ Find the profile:
 
 From the above commands I found out that the memory profile is **Win7SP1x64**, along with running processes such as Chrome, KeePass, cmd.exe, Notepad, and DumpIt. The lab says two programs stand out: a browser and a password manager. This matches Chrome and KeePass.
 
-## Environment Variables (Flag 1)
+### Environment Variables (Flag 1)
 
 Now I will run `envars` to list the environment variables of every process. The hint says something encoded is hiding there.
 
@@ -171,14 +181,14 @@ I searched the environment variables for the TMP entries and found the same stra
 ![envars output showing NEW_TMP](assets/lab2-fig04-envars.png)
 *Figure 4: envars output showing NEW_TMP*
 
-The value ends in letters and numbers like Base64, and it starts with `Zmxh`, which decodes to "fla". Decoding it with base64 I got **`flag{w3lc0m3_T0_$T4g3_!_Of_L4B_2}`**
+The value ends in letters and numbers like Base64, and it starts with `Zmxh`, which decodes to "fla". Decoding it with base64 I got `flag{w3lc0m3_T0_$T4g3_!_Of_L4B_2}`
 
 ![Base64 value decoded](assets/lab2-fig05-base64-decode.png)
 *Figure 5: Base64 value decoded.*
 
 **Why this tool worked:** `envars` reads the environment variables stored in each process's memory. A program can hide data inside a variable with a normal-looking name. It found the hidden data in notepad.exe memory, which a normal file search would not find.
 
-## KeePass (Flag 2)
+### KeePass (Flag 2)
 I searched the files in memory for .kdbx, the KeePass database type. filescan found Hidden.kdbx in the user’s Secrets folder, at offset 0x000000003fb112a0. 
 I then used dumpfiles with that offset to extract the file from memory.
 
@@ -221,10 +231,10 @@ Navigating inside the Keepass database i found the flag inside the recycle bin.
 
 *Figure 13: flag found in Recycle Bin entry.*
 
-The second flage is  `flag{w0w_th1s_1s_Th3_SeC0nD_ST4g3_!!}`
+The second flag is  `flag{w0w_th1s_1s_Th3_SeC0nD_ST4g3_!!}`
 
 
-## Chrome browsing history (flag3)
+### Chrome browsing history (flag3)
 
 I ran chromehistory using the community plugin pack. The output lists many URLs: news sites, blogs, and search engines, but only one file-sharing link, a Mega.nz folder at https://mega.nz/#F!TrgSQQTS!H0ZrUzF0B-ZKNM3y9E76lg
 
@@ -245,7 +255,126 @@ Now i will generate the SHA1 hash
 *Figure 17:  generating the sha 1 hash*
 
 I have entered the SHA1 password hash and got the Important.png file which is the third flag.
+`flag{oK_So_Now_St4g3_3_is_DoNE}`
 
-![alt text](assets/lab2-fig18.png)
+<img src="assets/lab2-fig18.png" alt="Lab 2 Figure 18" width="50%">
+
 *Figure 18:  The third flag*
+
+### Flags
+
+| Stage | Flag |
+|---|---|
+| Stage 1 | `flag{w3lc0m3_T0_$T4g3_!_Of_L4B_2}` |
+| Stage 2 | `flag{w0w_th1s_1s_Th3_SeC0nD_ST4g3_!!}` |
+| Stage 3 | `flag{oK_So_Now_St4g3_3_is_DoNE}` |
+
+### Lab 2 Conclusion 
+From this lab i found that the evidence can be hidden in different parts of memory, and each needs a different plugin to find it. I found the first flag using envars, recovered the KeePass database and its password from two files, and found the third flag through Chrome history and a Mega link. I also learned that clues from earlier labs can help solve new challenges. The main lesson is that small pieces of evidence can connect and lead to the final answer.
+
+---
+---
+
+
+# Lab 3
+
+## Challenge description
+```
+A malicious script encrypted a very secret piece of information I had on my system. Can you recover the information for me please?
+
+Note-1: This challenge is composed of only 1 flag. The flag split into 2 parts.
+
+Note-2: You'll need the first half of the flag to get the second.
+
+The flag format for this lab is: inctf{s0me_l33t_Str1ng}
+```
+## Scope the image
+
+First let's look for the profiles of the memory dump using imageinfo plugin. 
+
+![alt text](assets/lab3-fig01-imageinfo.png)
+*Figure 1: imageinfo output showing suggested profile*
+
+Output shows the profile as `Win7SP1x86_23418` and showed IA32PagedMemoryPae, which means this is a 32-bit Windows 7 image.
+
+
+Then we check the processes using pslist plugin.It shows two notepad.exe processes (PID 3736 and 3432).
+
+![alt text](assets/lab3-fig02-plist.png)
+*Figure 2: pslist output showing two notepad.exe processes (PID 3736 and 3432)*
+
+
+Two notepad.exe processes were opened one second apart, just seconds before the capture. DumpIt.exe is the tool that made the dump, so it is not the user's work.
+
+![alt text](assets/lab3-fig03-pstree.png)
+*Figure 3: check running processes with pstree plugin*
+
+Both notepads were opened by the user from explorer.exe. Notepad is the only user application running, so it is the text editor the lab hint points to.
+
+
+Then we check what files the two notepad processes had open using the cmdline plugin.
+
+![alt text](assets/lab3-fig04-cmd.png)
+*Figure 4: cmdline output showing the files opened by each notepad.exe*
+
+From the above output the PID 3736 opened `evilscript.py` and PID 3432 opened `vip.txt`, both on user hello's Desktop. 
+
+Now let's find both files in memory
+
+![alt text](assets/lab3-fig05.png)
+*Figure 5: filescan output showing evilscript.py.py and vip.txt on the Desktop*
+
+The script is actually named `evilscript.py.py`, a double extension that Windows would show as `evilscript.py` with extensions hidden. The `.lnk` files in the Recent folder show the user opened the script recently.
+
+### Extracting the files
+Now let's dump both the files using their offsets.
+
+![alt text](assets/lab3-fig06.png)
+*Figure 6: dumpfiles extracting evilscript.py.py and vip.txt with original names*
+
+
+I have recovered both the files from memory as 4096-byte `.dat` files.
+![alt text](assets/lab3-fig07.png)
+*Figure 7: contents of evilscript.py and vip.txt*
+
+from the above output  i found out that `evilscript.py` is the malicious script and `vip.txt` holds its output, the base64 string `am1gd2V4M20wXGs3b2U=`.
+
+### ## Reversing the script 
+The script hides the secret in two steps. First it changes every letter using XOR with the number 3. Then it turns the result into base64 and saves it in vip.txt.
+
+To get the secret back, I did the steps backwards. First I decoded the base64, then I XORed each letter with 3 again. Doing XOR with the same number twice gives back the original letter.
+![alt text](assets/lab3-fig08.png)
+*Figure 8: reversing the script recovers the first half of the flag*
+
+**First half of the flag** : `inctf{0n3_h4lf`
+
+### Finding the hidden image (second half of the flag)
+The lab hint says that steganography is used, so we searched the filescan output for image files.
+
+![alt text](assets/lab3-fig09.png)
+*Figure 9: filescan output filtered for image files*
+
+Most images are Internet Explorer cache files, which is normal. `suspision1.jpeg` stands out because it is on the Desktop next to evilscript.py and vip.txt, and its name is "suspicious" misspelled.
+![alt text](assets/lab3-fig10.png)
+*Figure 10: dumping suspision1.jpeg from memory with dumpfiles*
+
+ok now let's dig out the image using steghide tool. i used the passphrase as `inctf{0n3_h4lf` 
+
+![alt text](assets/lab3-fig11.png)
+*Figure 11: first steghide attempt failed with the wrong passphrase*
+
+Using steghide i got a file called secret text and inside that we found the second half of the flag `_1s_n0t_3n0ugh}`
+
+### Flag 
+`inctf{0n3_h4lf_1s_n0t_3n0ugh}`
+
+### Lab 3 Conclusion
+In this lab, cmdline was the key plugin. It showed which files the two notepad processes had open, which led straight to the script and its output. Reading the script let me reverse it by hand instead of guessing. The second half was hidden inside an image, which a normal file search would never show. This lab showed that one piece of evidence is often the key to the next one.
+
+
+---
+---
+
+# Lab 4: Obsession
+
 
