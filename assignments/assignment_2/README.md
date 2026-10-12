@@ -534,7 +534,7 @@ Most entries are normal websites and files, but two .bmp filenames are very long
 
 Decoding that we got almost similar flags. One decodes to a Lab 3 flag (a decoy), and the other decodes to the Lab 5 flag.
 
-so the first flag is `flag{!!_w3LL_d0n3_St4g3-1_0f_L4B_5_D0n3_!!}
+first flag is `flag{!!_w3LL_d0n3_St4g3-1_0f_L4B_5_D0n3_!!}
 `
 ### Opening the archive (Flag 2)
 
@@ -548,8 +548,14 @@ The lab says the first flag unlocks the archive, so I used it as the password.
 
 Using the first flag as the password unlocked the archive, and Stage2.png inside it shows the second flag.
 
-Flag 2: `flag{W1th_th1s_$taGe_2_1s_c0mPL3T3_!!}`
+The second Flag is `flag{W1th_th1s_$taGe_2_1s_c0mPL3T3_!!}`
 
+### Flags
+
+| Stage | Flag |
+|---|---|
+| Stage 1 | `flag{!!_w3LL_d0n3_St4g3-1_0f_L4B_5_D0n3_!!}` |
+| Stage 2 | `flag{W1th_th1s_$taGe_2_1s_c0mPL3T3_!!}` |
 
 
 #### Why iehistory was the right plugin?
@@ -558,3 +564,4 @@ I used iehistory because the system used Internet Explorer, and this plugin can 
 ### Lab 5 Conclusion
 
 In this lab the process list only showed WinRAR and a locked archive, so I checked the browser history for more clues. I found out a long filename that contained a hidden flag. After decoding that i got two similar filenames, I found that one was a decoy and other was the first flag. The real flag unlocked the archive, which contained another flag. The main thing i got from this lab is that that even filenames can hide evidence and that every clue needs to be checked carefully.
+
