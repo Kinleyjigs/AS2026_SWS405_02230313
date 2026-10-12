@@ -179,20 +179,73 @@ The value ends in letters and numbers like Base64, and it starts with `Zmxh`, wh
 **Why this tool worked:** `envars` reads the environment variables stored in each process's memory. A program can hide data inside a variable with a normal-looking name. It found the hidden data in notepad.exe memory, which a normal file search would not find.
 
 ## KeePass (Flag 2)
+I searched the files in memory for .kdbx, the KeePass database type. filescan found Hidden.kdbx in the user’s Secrets folder, at offset 0x000000003fb112a0. 
+I then used dumpfiles with that offset to extract the file from memory.
 
-I searched the files in memory for `.kdbx`, the KeePass database type. `filescan` found `Hidden.kdbx` in the user's Secrets folder, at offset `0x000000003fb112a0`. I then used `dumpfiles` with that offset to extract the file from memory.
-
-![finding and extracting the KeePass database](assets/lab2-fig06-kdbx-filescan-dumpfiles.png)
+![alt text](assets/lab2-fig06-kdbx-filescan-dumpfiles.png)
 *Figure 6: finding and extracting the KeePass database.*
 
-`dumpfiles` saved the database with a generic name, so I renamed it to `Hidden.kdbx`. The `file` command says it is a KeePass 2.x database, and `xxd` shows the KeePass signature at the start. This shows the file came out of memory intact.
 
-![renaming and checking the extracted file](assets/lab2-fig07-rename-verify.png)
-*Figure 7: renaming and checking the extracted file.*
+opening the database file with KeePass asked for a master password.
+![alt text](assets/lab2-fig07-keepass.png)
+*Figure 7: KeePass database.*
 
 ### Find the master password
-
-KeePass will ask for a master password, and the assignment says it won't be sitting next to the file. This one is just like Lab 1, where `hashdump` gave us the account hash that opened an archive. Here the database is also in the SmartNet user's folder, so start with that account.
-
-![hashdump output](assets/lab2-fig08-hashdump.png)
+To find the password i first dumped the lists of hashes from the memory.
+![alt text](assets/lab2-fig08-hashdump.png)
 *Figure 8: hashdump output.*
+
+I ran filescan on the full memory image and saved the output to filescan.txt, since the full list is too long to read directly.
+
+![Base64 value decoded](assets/lab2-fig09.png)
+*Figure 9: running filescan and saving it to a file.*
+
+I searched filescan.txt for files belonging to Alissa Simpson with grep -i "Alissa Simpson" filescan.txt.
+
+![Base64 value decoded](assets/lab2-fig10.png)
+
+*Figure 10: searching files beloging to Alissa*
+
+This found Password.png in her Pictures folder, at offset 0x000000003fce1c70, which looked like a strong lead for the KeePass master password.
+
+![Base64 value decoded](assets/lab2-fig11.png)
+*Figure 11: searching the saved output for Alissa Simpson’s files*
+
+Finally i found the password inside the image. the password is `P4SSw0rd_123`
+![alt text](assets/lab2-fig12.png)
+*Figure 12: password for the database*
+
+
+Navigating inside the Keepass database i found the flag inside the recycle bin. 
+![alt text](assets/lab2-fig13-flag2.png)
+
+*Figure 13: flag found in Recycle Bin entry.*
+
+The second flage is  `flag{w0w_th1s_1s_Th3_SeC0nD_ST4g3_!!}`
+
+
+## Chrome browsing history (flag3)
+
+I ran chromehistory using the community plugin pack. The output lists many URLs: news sites, blogs, and search engines, but only one file-sharing link, a Mega.nz folder at https://mega.nz/#F!TrgSQQTS!H0ZrUzF0B-ZKNM3y9E76lg
+
+![alt text](assets/lab2-fig14.png)
+*Figure 14: chromehistory output showing a Mega link.*
+
+At the link i found this Important.zip file.
+![alt text](assets/lab2-fig15.png)
+*Figure 15:  Mega link.*
+
+After downloading the Imporant.zip file, I found out that it is locked with a password, and now I need a password to unzip it. The Hint says “Password is SHA1(stage-3-FLAG) from Lab-1. Password is in lowercase.”
+
+![alt text](assets/lab2-fig16.png)
+*Figure 16:  unzipping the important.zip file*
+
+Now i will generate the SHA1 hash
+![alt text](assets/lab2-fig17.png)
+*Figure 17:  generating the sha 1 hash*
+
+I have entered the SHA1 password hash and got the Important.png file which is the third flag.
+
+![alt text](assets/lab2-fig18.png)
+*Figure 18:  The third flag*
+
