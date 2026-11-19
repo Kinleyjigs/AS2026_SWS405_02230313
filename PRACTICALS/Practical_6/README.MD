@@ -28,13 +28,13 @@ A snapshot was taken before starting, and the VM was reverted after the lab.
 
 ## Part A: Static Analysis (without running it)
 
-### A1. File type
+### 1. File type
 ![img3](assets/img3.png)
 *Figure 3: `file` shows it's a Python script, not a Windows .exe.*
 
 The `file` command reads the content, not just the name, so we know it really is a text-based Python script.
 
-### A2. Hashing
+### 2. Hashing
 ![img4](assets/img4.png)
 *Figure 4: The hash commands failed because I was in the wrong folder.*
 
@@ -42,25 +42,25 @@ I ran the hash commands from the parent folder, so they couldn't find the file a
 
 `7ef94bfb15c7479e209a701b40cf6994a2f9c4b0870b4576966b43050554bc26`
 
-### A3. Strings
+### 3. Strings
 ![img5](assets/img5.png)
 *Figure 5: Readable strings that hint at ransomware-like behaviour.*
 
 Strings like `YOUR FILES ARE LOCKED`, `SIMULATED_RANSOM_NOTE`, `FILE_READ`, `NOTE_CREATE`, `LOG_WRITE` and `lab_workspace` suggest the program makes a folder, reads files, and drops a ransom note. At this point it's just a guess.
 
-### A4. Hex view
+### 4. Hex view
 ![img6](assets/img6.png)
 *Figure 6: The file starts with `#!/usr/bin/env python3`, not `MZ`.*
 
 No `MZ` header means this isn't a Windows PE file. It's just a script.
 
-### A5. YARA
+### 5. YARA
 ![img7](assets/img7.png)
 *Figure 7: YARA matched all three markers in the sample.*
 
 The rule needs 2 of 3 markers and all 3 were found (`0x82f`, `0x85a`, `0xa88`).
 
-### A6. Static analysis worksheet
+### 6. Static analysis worksheet
 | Question | What I saw | What it means |
 |---|---|---|
 | Real file type? | Python script, UTF-8 text | Not a Windows executable |
