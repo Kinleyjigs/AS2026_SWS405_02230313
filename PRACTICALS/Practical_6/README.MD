@@ -183,6 +183,6 @@ Only DNS (53), SSH (22) and DHCP (68) show up. These are normal Kali services, n
 - This is only one run. Real malware can act differently depending on time, network or environment.
 
 ## Conclusion
-Static analysis made it look like ransomware. Running it showed it only creates a few dummy files, reads them, and drops a fake note inside `lab_workspace`. There was no encryption, no deletion and no network activity. The lab showed that strings and YARA give you a good guess, but you need dynamic analysis to know what a file really does.
+From this lab, I learned the difference between static and dynamic malware analysis. Static analysis helped me identify suspicious signs without running the file, while dynamic analysis helped me understand what the file actually does. I learned that the sample only created dummy files, read them and generated a fake ransom note. It did not encrypt or delete any files or make network connections. Overall, I understood that we should not judge a file only by its appearance or suspicious strings. We need to analyse its actual behaviour to know whether it is harmful or not.
 
 
